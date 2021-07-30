@@ -1,0 +1,12 @@
+[package]
+name = "pipelib"
+version = "0.1.0"
+edition = "2018"
+authors = ["Keating K. Reid <keating.reid@pm.me>"]
+description = "A thin wrapper over Unix pipes with polling functionality."
+license = "LGPL-2.1"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libc = "0.2.98"
