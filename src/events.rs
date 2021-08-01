@@ -1,12 +1,12 @@
-use bitflags::bitflags;
+use bitflags;
 use libc::{
     POLLERR, POLLHUP, POLLIN, POLLNVAL, POLLOUT, POLLPRI, POLLRDBAND, POLLRDNORM, POLLWRBAND,
     POLLWRNORM,
 };
-use std::{convert::TryFrom, io};
 
-bitflags! {
-    /// `Events` provides a more type-safe interface for [libc]'s poll flags \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc\).
+bitflags::bitflags! {
+    /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
+    /// \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc\).
     pub struct Events: i16 {
         const POLLIN = POLLIN;
         const POLLPRI = POLLPRI;
@@ -27,59 +27,42 @@ impl From<Events> for i16 {
     }
 }
 
-impl TryFrom<i16> for Events {
-    type Error = io::Error;
-
-    fn try_from(value: i16) -> Result<Self, Self::Error> {
-        Events::ALL_EVENTS
-            .binary_search_by(|ev| i16::from(*ev).cmp(&value))
-            .map_err(|_| {
-                io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "Received unknown or unsupported revent ({}) from poll",
-                        value
-                    ),
-                )
-            })
-            .map(|idx| Events::ALL_EVENTS[idx])
-    }
-}
-
 impl Events {
-    const ALL_EVENTS: [Events; 10] = [
-        Events::POLLIN,
-        Events::POLLPRI,
-        Events::POLLOUT,
-        Events::POLLERR,
-        Events::POLLHUP,
-        Events::POLLNVAL,
-        Events::POLLRDNORM,
-        Events::POLLRDBAND,
-        Events::POLLWRNORM,
-        Events::POLLWRBAND,
-    ];
-
-    pub fn iter() -> impl Iterator<Item = Events> {
-        Events::ALL_EVENTS.iter().copied()
+    /// Returns a bitmask of all events indicating that a pipe is writable.
+    pub const fn writable_mask() -> i16 {
+        Events::POLLOUT.bits | Events::POLLWRNORM.bits | Events::POLLWRBAND.bits
     }
 
-    pub fn is_writable(self) -> bool {
-        const WRITABLE_MASK: i16 =
-            Events::POLLOUT.bits | Events::POLLWRNORM.bits | Events::POLLWRBAND.bits;
-        self.bits & WRITABLE_MASK != 0
+    /// Whether a particular event indicates that a pipe is writable.
+    pub const fn is_writable(self) -> bool {
+        self.bits & Events::writable_mask() != 0
     }
 
-    pub fn is_readable(self) -> bool {
-        const READABLE_MASK: i16 = Events::POLLIN.bits
+    /// Returns a bitmask of all events indicating that a pipe is readable.
+    pub const fn readable_mask() -> i16 {
+        Events::POLLIN.bits
             | Events::POLLRDNORM.bits
             | Events::POLLRDBAND.bits
-            | Events::POLLPRI.bits;
-        self.bits & READABLE_MASK != 0
+            | Events::POLLPRI.bits
     }
 
-    pub fn is_error(self) -> bool {
-        const ERROR_MASK: i16 = Events::POLLERR.bits | Events::POLLNVAL.bits;
-        self.bits & ERROR_MASK != 0
+    /// Whether a particular event indicates that a pipe is readable.
+    pub const fn is_readable(self) -> bool {
+        self.bits & Events::readable_mask() != 0
+    }
+
+    /// Returns a bitmask of all events indicating an error state.
+    pub const fn error_mask() -> i16 {
+        Events::POLLERR.bits | Events::POLLNVAL.bits
+    }
+
+    /// Whether a particular event indicates an error.
+    pub const fn is_error(self) -> bool {
+        self.bits & Events::error_mask() != 0
+    }
+
+    /// Whether an event is `Events::POLLHUP`.
+    pub const fn is_hangup(self) -> bool {
+        self.bits & Events::POLLHUP.bits != 0
     }
 }

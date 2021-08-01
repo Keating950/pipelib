@@ -1,7 +1,7 @@
 use crate::Events;
 use libc::{c_int, pollfd};
 use smallvec::SmallVec;
-use std::{convert::TryFrom, fmt, io, iter, mem, os::unix::prelude::AsRawFd};
+use std::{fmt, io, iter, mem, os::unix::prelude::AsRawFd};
 
 /// `Poll` provides an interface for [libc::poll] that allows the monitoring of registered
 /// [Reader](crate::Reader) and [Writer](crate::Writer) instances.
@@ -87,7 +87,7 @@ impl PollFd {
                     let event = revents & (1 << shift);
                     shift += 1;
                     if event != 0 {
-                        return Some(Events::try_from(event).unwrap());
+                        return Some(Events::from_bits(event).unwrap());
                     } else {
                         continue;
                     }
