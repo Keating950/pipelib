@@ -1,31 +1,16 @@
-#![allow(unused)]
+#[macro_use]
+mod macros;
+mod events;
 mod pipe;
+mod poll;
 mod reader;
 mod writer;
 
-use crate::{pipe::Pipe, reader::Reader, writer::Writer};
+pub use crate::{events::Events, poll::Poll, reader::Reader, writer::Writer};
 use libc::c_int;
 
-pub(crate) mod crate_macros {
-    #[macro_export]
-    macro_rules! oserr {
-        () => {
-            std::io::Error::last_os_error()
-        };
-    }
-
-    #[macro_export]
-    macro_rules! assert_ok {
-        ($val:ident) => {
-            assert!($val.is_ok(), "{:?}", $val.unwrap_err())
-        };
-        ($e:expr) => {
-            let tmp = $e;
-            assert_ok!(tmp)
-        };
-    }
-}
-
+/// Creates a [Reader]/[Writer] pair for a non-blocking Unix pipe. The [FD_CLOEXEC](libc::FD_CLOEXEC)
+/// and [O_NONBLOCK](libc::O_NONBLOCK) flags are set for both.
 pub fn new() -> std::io::Result<(Reader, Writer)> {
     let mut fds: [c_int; 2] = [-1, -1];
     unsafe {

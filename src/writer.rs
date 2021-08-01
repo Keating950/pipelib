@@ -1,19 +1,17 @@
+use crate::{pipe::Pipe, poll::Pollable};
 use libc::c_int;
-
-use crate::pipe::Pipe;
 use std::{
     io::{self, prelude::*},
-    os::unix::io::{FromRawFd, IntoRawFd, RawFd},
+    os::unix::{
+        io::{AsRawFd, FromRawFd, RawFd},
+        prelude::IntoRawFd,
+    },
 };
 
+/// The write end of a Unix pipe. Like [Reader](crate::Reader), Writer is non-blocking, and the
+/// [CLOEXEC](libc::FD_CLOEXEC) flag is set.
 #[derive(Debug)]
 pub struct Writer(Pipe);
-
-impl Writer {
-    pub(crate) fn new(n: c_int) -> Writer {
-        Writer(Pipe(n))
-    }
-}
 
 impl Write for Writer {
     #[inline]
@@ -34,9 +32,24 @@ impl FromRawFd for Writer {
     }
 }
 
+impl AsRawFd for Writer {
+    #[inline]
+    fn as_raw_fd(&self) -> RawFd {
+        self.0.as_raw_fd()
+    }
+}
+
 impl IntoRawFd for Writer {
     #[inline]
     fn into_raw_fd(self) -> RawFd {
-        self.0.0
+        self.0.into_raw_fd()
+    }
+}
+
+impl Pollable for Writer {}
+
+impl Writer {
+    pub(crate) fn new(n: c_int) -> Writer {
+        Writer(Pipe(n))
     }
 }

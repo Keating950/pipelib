@@ -1,9 +1,7 @@
-use crate::oserr;
 use libc::{self, c_int, c_void, size_t};
 use std::{
     io::{self, prelude::*},
-    mem,
-    os::unix::io::{FromRawFd, IntoRawFd, RawFd},
+    os::unix::prelude::{AsRawFd, FromRawFd, IntoRawFd, RawFd},
 };
 
 #[derive(Debug)]
@@ -40,9 +38,9 @@ impl Write for Pipe {
         self.write_from_ptr(ptr, buf.len())
     }
 
-    fn write_all(&mut self, mut buf: &[u8]) -> io::Result<()> {
+    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
         let mut to_write = buf.len();
-        let mut ptr = buf.as_ptr() as *const c_void;
+        let ptr = buf.as_ptr() as *const c_void;
         while to_write > 0 {
             let written = self.write_from_ptr(ptr, to_write)?;
             to_write -= written;
@@ -72,18 +70,23 @@ impl FromRawFd for Pipe {
     }
 }
 
+impl AsRawFd for Pipe {
+    #[inline]
+    fn as_raw_fd(&self) -> RawFd {
+        self.0
+    }
+}
+
 impl IntoRawFd for Pipe {
     #[inline]
     fn into_raw_fd(self) -> RawFd {
-        self.0
+        self.as_raw_fd()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::assert_ok;
-    use std::io::prelude::*;
 
     #[test]
     fn test_new() {
