@@ -1,5 +1,5 @@
 use crate::Events;
-use libc::{c_int, pollfd, nfds_t};
+use libc::{c_int, nfds_t, pollfd};
 use smallvec::SmallVec;
 use std::{fmt, io, iter, mem, os::unix::prelude::AsRawFd};
 
@@ -81,19 +81,17 @@ impl PollFd {
         let revents = self.0.revents;
         self.0.revents = 0;
         let mut shift = 0;
-        iter::from_fn(move || {
-            loop {
-                if shift < 16 {
-                    let event = revents & (1 << shift);
-                    shift += 1;
-                    if event != 0 {
-                        return Some(Events::from_bits(event).unwrap());
-                    } else {
-                        continue;
-                    }
+        iter::from_fn(move || loop {
+            if shift < 16 {
+                let event = revents & (1 << shift);
+                shift += 1;
+                if event != 0 {
+                    return Some(Events::from_bits(event).unwrap());
                 } else {
-                    return None;
+                    continue;
                 }
+            } else {
+                return None;
             }
         })
     }
@@ -121,14 +119,14 @@ mod tests {
     fn test_poll_events() {
         let mut poll = Poll::new();
         let (reader, mut writer) = crate::new().unwrap();
-        poll.register(&reader, 0, Events::POLLIN);
-        poll.register(&writer, 1, Events::POLLOUT);
+        poll.register(&reader, 0, Events::all_readable() | Events::all_error());
+        poll.register(&writer, 1, Events::all_writable() | Events::all_error());
         assert_ok!(poll.poll(None));
-        let ev = poll.events().nth(0).unwrap();
-        assert_eq!(ev.1, Events::POLLOUT);
+        let (_, ev) = poll.events().nth(0).unwrap();
+        assert!(ev.is_writable());
         writer.write(b"Hello").unwrap();
         assert_ok!(poll.poll(None));
-        let ev = poll.events().nth(0).unwrap();
-        assert_eq!(ev.1, Events::POLLIN);
+        let (_, ev) = poll.events().nth(0).unwrap();
+        assert!(ev.is_readable());
     }
 }

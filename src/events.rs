@@ -3,6 +3,7 @@ use libc::{
     POLLERR, POLLHUP, POLLIN, POLLNVAL, POLLOUT, POLLPRI, POLLRDBAND, POLLRDNORM, POLLWRBAND,
     POLLWRNORM,
 };
+use std::mem;
 
 bitflags::bitflags! {
     /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
@@ -29,44 +30,56 @@ impl From<Events> for i16 {
 
 impl Events {
     /// Returns a bitmask of all events indicating that a pipe is readable.
+    // For whatever, reason the BitOr operation for a bitflags struct is not considered const,
+    // despite the operation on its bits being so. This is why transmute is used here and in the
+    // other masking functions.
     #[inline]
-    pub fn readable_mask() -> Events {
-        Events::POLLIN | Events::POLLRDNORM | Events::POLLRDBAND | Events::POLLPRI
+    pub const fn all_readable() -> Events {
+        unsafe {
+            mem::transmute(
+                Events::POLLIN.bits
+                    | Events::POLLRDNORM.bits
+                    | Events::POLLRDBAND.bits
+                    | Events::POLLPRI.bits,
+            )
+        }
     }
 
     /// Returns a bitmask of all events indicating that a pipe is writable.
     #[inline]
-    pub fn writable_mask() -> Events {
-        Events::POLLOUT | Events::POLLWRNORM | Events::POLLWRBAND
+    pub const fn all_writable() -> Events {
+        unsafe {
+            mem::transmute(Events::POLLOUT.bits | Events::POLLWRNORM.bits | Events::POLLWRBAND.bits)
+        }
     }
 
     /// Returns a bitmask of all events indicating an error state.
     #[inline]
-    pub fn error_mask() -> Events {
-        Events::POLLERR | Events::POLLNVAL
+    pub const fn all_error() -> Events {
+        unsafe { mem::transmute(Events::POLLERR.bits | Events::POLLNVAL.bits) }
     }
 
     /// Whether a particular event indicates that a pipe is readable.
     #[inline]
-    pub fn is_readable(self) -> bool {
-        self.intersects(Events::readable_mask())
+    pub const fn is_readable(self) -> bool {
+        self.intersects(Events::all_readable())
     }
 
     /// Whether a particular event indicates that a pipe is writable.
     #[inline]
-    pub fn is_writable(self) -> bool {
-        self.intersects(Events::writable_mask())
+    pub const fn is_writable(self) -> bool {
+        self.intersects(Events::all_writable())
     }
 
     /// Whether a particular event indicates an error.
     #[inline]
-    pub fn is_error(self) -> bool {
-        self.intersects(Events::error_mask())
+    pub const fn is_error(self) -> bool {
+        self.intersects(Events::all_error())
     }
 
     /// Whether an event is `Events::POLLHUP`.
     #[inline]
-    pub fn is_hangup(self) -> bool {
+    pub const fn is_hangup(self) -> bool {
         self.intersects(Events::POLLHUP)
     }
 }
