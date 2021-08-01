@@ -1,8 +1,8 @@
 # pipelib
-A barebones wrapper over Unix pipes and polling.
+A thin Rust wrapper over Unix pipes and polling.
 
 ## Example
-```
+```rust
 use pipelib::Events; 
 use pipelib::Poll;
 use std::{
