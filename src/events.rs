@@ -28,41 +28,45 @@ impl From<Events> for i16 {
 }
 
 impl Events {
-    /// Returns a bitmask of all events indicating that a pipe is writable.
-    pub const fn writable_mask() -> i16 {
-        Events::POLLOUT.bits | Events::POLLWRNORM.bits | Events::POLLWRBAND.bits
-    }
-
-    /// Whether a particular event indicates that a pipe is writable.
-    pub const fn is_writable(self) -> bool {
-        self.bits & Events::writable_mask() != 0
-    }
-
     /// Returns a bitmask of all events indicating that a pipe is readable.
-    pub const fn readable_mask() -> i16 {
-        Events::POLLIN.bits
-            | Events::POLLRDNORM.bits
-            | Events::POLLRDBAND.bits
-            | Events::POLLPRI.bits
+    #[inline]
+    pub fn readable_mask() -> Events {
+        Events::POLLIN | Events::POLLRDNORM | Events::POLLRDBAND | Events::POLLPRI
     }
 
-    /// Whether a particular event indicates that a pipe is readable.
-    pub const fn is_readable(self) -> bool {
-        self.bits & Events::readable_mask() != 0
+    /// Returns a bitmask of all events indicating that a pipe is writable.
+    #[inline]
+    pub fn writable_mask() -> Events {
+        Events::POLLOUT | Events::POLLWRNORM | Events::POLLWRBAND
     }
 
     /// Returns a bitmask of all events indicating an error state.
-    pub const fn error_mask() -> i16 {
-        Events::POLLERR.bits | Events::POLLNVAL.bits
+    #[inline]
+    pub fn error_mask() -> Events {
+        Events::POLLERR | Events::POLLNVAL
+    }
+
+    /// Whether a particular event indicates that a pipe is readable.
+    #[inline]
+    pub fn is_readable(self) -> bool {
+        self.intersects(Events::readable_mask())
+    }
+
+    /// Whether a particular event indicates that a pipe is writable.
+    #[inline]
+    pub fn is_writable(self) -> bool {
+        self.intersects(Events::writable_mask())
     }
 
     /// Whether a particular event indicates an error.
-    pub const fn is_error(self) -> bool {
-        self.bits & Events::error_mask() != 0
+    #[inline]
+    pub fn is_error(self) -> bool {
+        self.intersects(Events::error_mask())
     }
 
     /// Whether an event is `Events::POLLHUP`.
-    pub const fn is_hangup(self) -> bool {
-        self.bits & Events::POLLHUP.bits != 0
+    #[inline]
+    pub fn is_hangup(self) -> bool {
+        self.intersects(Events::POLLHUP)
     }
 }
