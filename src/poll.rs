@@ -1,5 +1,5 @@
 use crate::Events;
-use libc::{c_int, pollfd};
+use libc::{c_int, pollfd, nfds_t};
 use smallvec::SmallVec;
 use std::{fmt, io, iter, mem, os::unix::prelude::AsRawFd};
 
@@ -33,7 +33,7 @@ impl Poll {
         let timeout = timeout.unwrap_or(0) as i32;
         unsafe {
             let ptr = mem::transmute::<_, *mut pollfd>(self.fds.as_mut_ptr());
-            match libc::poll(ptr, self.fds.len() as u64, timeout) {
+            match libc::poll(ptr, self.fds.len() as nfds_t, timeout) {
                 n if n < 0 => Err(oserr!()),
                 n => Ok(n as usize),
             }
