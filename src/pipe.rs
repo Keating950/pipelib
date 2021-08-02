@@ -84,6 +84,12 @@ impl IntoRawFd for Pipe {
     }
 }
 
+impl Drop for Pipe {
+    fn drop(&mut self) {
+        unsafe { libc::close(self.0) };
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

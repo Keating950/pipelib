@@ -81,17 +81,19 @@ impl PollFd {
         let revents = self.0.revents;
         self.0.revents = 0;
         let mut shift = 0;
-        iter::from_fn(move || loop {
-            if shift < 16 {
-                let event = revents & (1 << shift);
-                shift += 1;
-                if event != 0 {
-                    return Some(Events::from_bits(event).unwrap());
+        iter::from_fn(move || {
+            loop {
+                if shift < 16 {
+                    let event = revents & (1 << shift);
+                    shift += 1;
+                    if event != 0 {
+                        return Some(Events::from_bits(event).unwrap());
+                    } else {
+                        continue;
+                    }
                 } else {
-                    continue;
+                    return None;
                 }
-            } else {
-                return None;
             }
         })
     }
