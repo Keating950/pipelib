@@ -7,7 +7,7 @@ use std::mem;
 
 bitflags::bitflags! {
     /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
-    /// \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc\).
+    /// \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc.\).
     pub struct Events: i16 {
         const POLLIN = POLLIN;
         const POLLPRI = POLLPRI;
