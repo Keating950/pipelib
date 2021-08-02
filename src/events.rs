@@ -23,6 +23,7 @@ bitflags::bitflags! {
 }
 
 impl From<Events> for i16 {
+    #[inline]
     fn from(e: Events) -> Self {
         e.bits
     }
