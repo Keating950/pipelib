@@ -8,14 +8,15 @@ dependencies other than libc.
 ```rust
 use pipelib::Events; 
 use pipelib::Poll;
+use pipelib::Token;
 use std::{
     io::{self, prelude::*},
     str,
 };
 
 fn main() -> io::Result<()> {
-    const READER_TOKEN: usize = 0;
-    const WRITER_TOKEN: usize = 1;
+    const READER_TOKEN: Token = Token(0);
+    const WRITER_TOKEN: Token = Token(1);
     let (mut reader, mut writer) = pipelib::new()?;
     let mut poll = Poll::new();
     poll.register(&mut reader, READER_TOKEN, Events::POLLIN | Events::POLLERR);

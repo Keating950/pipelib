@@ -8,7 +8,7 @@ use std::{fmt, io, iter, mem};
 #[derive(Debug, Default)]
 pub struct Poll {
     fds: SmallVec<[PollFd; Poll::POLL_STACK_CAPACITY]>,
-    tokens: SmallVec<[usize; Poll::POLL_STACK_CAPACITY]>,
+    tokens: SmallVec<[Token; Poll::POLL_STACK_CAPACITY]>,
 }
 
 impl Poll {
@@ -25,7 +25,7 @@ impl Poll {
     /// applies to. Note that a caller may register multiple different pollable objects with
     /// the same token.
     #[inline]
-    pub fn register<T: Pollable>(&mut self, fd: &T, token: usize, events: Events) {
+    pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Events) {
         self.fds.push(PollFd::new(fd.as_raw_fd(), events));
         self.tokens.push(token);
     }
@@ -46,7 +46,7 @@ impl Poll {
     /// Iterates over events received in the last call to (poll)[Poll::poll]. Each event
     /// is yielded along with the token that the [Reader](crate::Reader)/[Writer](crate::Writer)
     /// was registered with.
-    pub fn events(&mut self) -> impl Iterator<Item = (usize, Events)> + '_ {
+    pub fn events(&mut self) -> impl Iterator<Item = (Token, Events)> + '_ {
         self.fds
             .iter_mut()
             .zip(&self.tokens)
@@ -55,6 +55,16 @@ impl Poll {
 }
 
 /* -------------------------------------------------------------- */
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Token(pub usize);
+
+impl From<Token> for usize {
+    #[inline]
+    fn from(tok: Token) -> Self {
+        tok.0
+    }
+}
 
 #[repr(transparent)]
 pub(crate) struct PollFd(pollfd);
@@ -122,8 +132,16 @@ mod tests {
     fn test_poll_events() {
         let mut poll = Poll::new();
         let (reader, mut writer) = crate::new().unwrap();
-        poll.register(&reader, 0, Events::all_readable() | Events::all_error());
-        poll.register(&writer, 1, Events::all_writable() | Events::all_error());
+        poll.register(
+            &reader,
+            Token(0),
+            Events::all_readable() | Events::all_error(),
+        );
+        poll.register(
+            &writer,
+            Token(1),
+            Events::all_writable() | Events::all_error(),
+        );
         assert_ok!(poll.poll(None));
         let (_, ev) = poll.events().nth(0).unwrap();
         assert!(ev.is_writable());
