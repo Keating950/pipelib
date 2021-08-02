@@ -1,7 +1,7 @@
-use crate::Events;
+use crate::{Events, Pollable};
 use libc::{c_int, nfds_t, pollfd};
 use smallvec::SmallVec;
-use std::{fmt, io, iter, mem, os::unix::prelude::AsRawFd};
+use std::{fmt, io, iter, mem};
 
 /// `Poll` provides an interface for [libc::poll] that allows the monitoring of registered
 /// [Reader](crate::Reader) and [Writer](crate::Writer) instances.
@@ -50,8 +50,6 @@ impl Poll {
             .flat_map(|(pfd, tok)| pfd.events().map(move |ev| (*tok, ev)))
     }
 }
-
-pub trait Pollable: AsRawFd {}
 
 /* -------------------------------------------------------------- */
 

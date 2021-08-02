@@ -1,6 +1,6 @@
 use libc::c_int;
 
-use crate::{pipe::Pipe, poll::Pollable};
+use crate::{pipe::Pipe, Pollable};
 use std::{
     io::{self, prelude::*},
     os::unix::{

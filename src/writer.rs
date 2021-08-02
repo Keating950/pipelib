@@ -1,4 +1,4 @@
-use crate::{pipe::Pipe, poll::Pollable};
+use crate::{pipe::Pipe, Pollable};
 use libc::c_int;
 use std::{
     io::{self, prelude::*},

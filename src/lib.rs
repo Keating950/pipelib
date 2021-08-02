@@ -4,10 +4,11 @@ mod macros;
 mod events;
 mod pipe;
 mod poll;
+mod pollable;
 mod reader;
 mod writer;
 
-pub use crate::{events::Events, poll::Poll, reader::Reader, writer::Writer};
+pub use crate::{events::Events, poll::Poll, pollable::Pollable, reader::Reader, writer::Writer};
 use libc::c_int;
 
 /// Creates a [Reader]/[Writer] pair for a non-blocking Unix pipe. The [FD_CLOEXEC](libc::FD_CLOEXEC)
