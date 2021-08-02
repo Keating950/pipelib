@@ -7,11 +7,14 @@ use std::{fmt, io, iter, mem};
 /// [Reader](crate::Reader) and [Writer](crate::Writer) instances.
 #[derive(Debug, Default)]
 pub struct Poll {
-    fds: SmallVec<[PollFd; 16]>,
-    tokens: SmallVec<[usize; 16]>,
+    fds: SmallVec<[PollFd; Poll::POLL_STACK_CAPACITY]>,
+    tokens: SmallVec<[usize; Poll::POLL_STACK_CAPACITY]>,
 }
 
 impl Poll {
+    // Should be enough for the vast majority of use cases
+    const POLL_STACK_CAPACITY: usize = 8;
+
     #[inline]
     pub fn new() -> Poll {
         Default::default()
