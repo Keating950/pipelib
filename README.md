@@ -1,7 +1,7 @@
 # pipelib
 Pipelib is a thin Rust wrapper over non-blocking Unix pipes and polling. It is intended to provide
-an interface more similar to libc's than alternatives like [mio](https://crates.io/crates/mio)
-without sacrificing ergonomics or useful features. It's also very small, having only two
+an interface more similar to libc's than libraries like [mio](https://crates.io/crates/mio)
+without sacrificing ergonomics or useful features. It is also very small, having only two
 dependencies other than libc.
 
 ## Example
@@ -41,6 +41,6 @@ fn main() -> io::Result<()> {
 ```
 
 ## Compatibility
-Pipelib should work on any Unix-like OS, and is actively developed and tested on both Linux and
+Pipelib should work on any Unix-like OS and is actively developed and tested on Linux and
 MacOS. Windows is not supported.
 
