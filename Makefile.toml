@@ -1,0 +1,12 @@
+[tasks.build]
+command = "cargo"
+args = ["build"]
+dependencies = ["fmt", "clippy"]
+
+[tasks.fmt]
+command = "cargo"
+args = ["fmt"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--", "-Dwarnings"]
