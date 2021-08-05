@@ -57,7 +57,7 @@ impl Poll {
 
 /* -------------------------------------------------------------- */
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Token(pub usize);
 
 impl From<Token> for usize {
