@@ -23,7 +23,7 @@ impl Pipe {
             let e = oserr!();
             match e.kind() {
                 io::ErrorKind::WouldBlock => Ok(0),
-                _ => return Err(e),
+                _ => Err(e),
             }
         } else {
             Ok(bytes_read as usize)

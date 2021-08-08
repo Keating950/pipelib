@@ -1,11 +1,11 @@
-use bitflags;
+use bitflags::bitflags;
 use libc::{
     POLLERR, POLLHUP, POLLIN, POLLNVAL, POLLOUT, POLLPRI, POLLRDBAND, POLLRDNORM, POLLWRBAND,
     POLLWRNORM,
 };
 use std::mem;
 
-bitflags::bitflags! {
+bitflags! {
     /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
     /// \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc.\).
     pub struct Events: i16 {
