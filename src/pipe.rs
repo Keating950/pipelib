@@ -85,6 +85,7 @@ impl IntoRawFd for Pipe {
 }
 
 impl Drop for Pipe {
+    #[inline]
     fn drop(&mut self) {
         unsafe { libc::close(self.0) };
     }

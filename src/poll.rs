@@ -46,6 +46,7 @@ impl Poll {
     /// Iterates over events received in the last call to (poll)[Poll::poll]. Each event
     /// is yielded along with the token that the [Reader](crate::Reader)/[Writer](crate::Writer)
     /// was registered with.
+    #[inline]
     pub fn events(&mut self) -> impl Iterator<Item = (Token, Events)> + '_ {
         self.fds
             .iter_mut()
@@ -56,7 +57,7 @@ impl Poll {
 
 /* -------------------------------------------------------------- */
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Token(pub usize);
 
 impl From<Token> for usize {
