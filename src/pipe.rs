@@ -38,17 +38,6 @@ impl Write for Pipe {
         self.write_from_ptr(ptr, buf.len())
     }
 
-    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
-        let mut to_write = buf.len();
-        let ptr = buf.as_ptr() as *const c_void;
-        while to_write > 0 {
-            let written = self.write_from_ptr(ptr, to_write)?;
-            to_write -= written;
-            unsafe { ptr.add(written) };
-        }
-        Ok(())
-    }
-
     #[inline]
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
@@ -121,5 +110,12 @@ mod tests {
         let bytes_read = res.unwrap();
         assert_eq!(bytes_read, test_msg.len());
         assert_eq!(buf, test_msg);
+    }
+
+    #[test]
+    fn test_write_all() {
+        let test_msg = b"Hello, world".to_vec();
+        let (_reader, mut writer) = crate::new().unwrap();
+        assert_ok!(writer.write_all(&test_msg));
     }
 }
