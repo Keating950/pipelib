@@ -20,10 +20,9 @@ impl Poll {
         Default::default()
     }
 
-    /// Register a [Reader](crate::Reader) or [Writer](crate::Writer) for polling. `token` is later
-    /// yielded by [Poll::events] along with each event to indicate which Reader/Writer the event
-    /// applies to. Note that a caller may register multiple different pollable objects with
-    /// the same token.
+    /// Register a [Pollable] object for polling. `token` is later yielded by [Poll::events] along
+    /// with each event to indicate which object the event applies to. Note that a caller may
+    /// register multiple different pollable objects with the same token.
     #[inline]
     pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Events) {
         self.fds.push(PollFd::new(fd.as_raw_fd(), events));
@@ -44,8 +43,7 @@ impl Poll {
     }
 
     /// Iterates over events received in the last call to (poll)[Poll::poll]. Each event
-    /// is yielded along with the token that the [Reader](crate::Reader)/[Writer](crate::Writer)
-    /// was registered with.
+    /// is yielded along with the token that the [Pollable] was registered with.
     #[inline]
     pub fn events(&mut self) -> impl Iterator<Item = (Token, Events)> + '_ {
         self.fds
