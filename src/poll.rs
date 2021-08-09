@@ -93,13 +93,11 @@ impl PollFd {
         let mut shift = 0;
         iter::from_fn(move || {
             loop {
-                if shift < 16 {
+                if shift < mem::size_of::<Events>() * 8 {
                     let event = revents & (1 << shift);
                     shift += 1;
                     if event != 0 {
                         return Some(Events::from_bits(event).unwrap());
-                    } else {
-                        continue;
                     }
                 } else {
                     return None;
