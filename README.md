@@ -4,9 +4,6 @@ an interface more similar to libc's than libraries like [mio](https://crates.io/
 without sacrificing ergonomics or useful features. It is also very small, having only two
 dependencies other than libc.
 
-**NOTE**: Pipelib is in active development and should be considered pre-0.1.0;
-breaking changes may occur without a version bump for the time being.
-
 ## Example
 ```rust
 use pipelib::Events; 
