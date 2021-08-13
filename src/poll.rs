@@ -1,4 +1,4 @@
-use crate::{Events, Pollable};
+use crate::{Event, Pollable};
 use libc::{c_int, nfds_t, pollfd};
 use smallvec::SmallVec;
 use std::{fmt, io, iter, mem};
@@ -24,7 +24,7 @@ impl Poll {
     /// with each event to indicate which object the event applies to. Note that a caller may
     /// register multiple different pollable objects with the same token.
     #[inline]
-    pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Events) {
+    pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Event) {
         self.fds.push(PollFd::new(fd.as_raw_fd(), events));
         self.tokens.push(token);
     }
@@ -45,7 +45,7 @@ impl Poll {
     /// Iterates over events received in the last call to (poll)[Poll::poll]. Each event
     /// is yielded along with the token that the [Pollable] was registered with.
     #[inline]
-    pub fn events(&mut self) -> impl Iterator<Item = (Token, Events)> + '_ {
+    pub fn events(&mut self) -> impl Iterator<Item = (Token, Event)> + '_ {
         self.fds
             .iter_mut()
             .zip(&self.tokens)
@@ -79,7 +79,7 @@ impl fmt::Debug for PollFd {
 }
 
 impl PollFd {
-    pub fn new(fd: c_int, events: Events) -> PollFd {
+    pub fn new(fd: c_int, events: Event) -> PollFd {
         PollFd(pollfd {
             fd,
             events: events.into(),
@@ -87,17 +87,17 @@ impl PollFd {
         })
     }
 
-    pub fn events(&mut self) -> impl Iterator<Item = Events> {
+    pub fn events(&mut self) -> impl Iterator<Item = Event> {
         let revents = self.0.revents;
         self.0.revents = 0;
         let mut shift = 0;
         iter::from_fn(move || {
             loop {
-                if shift < mem::size_of::<Events>() * 8 {
+                if shift < mem::size_of::<Event>() * 8 {
                     let event = revents & (1 << shift);
                     shift += 1;
                     if event != 0 {
-                        return Some(Events::from_bits(event).unwrap());
+                        return Some(Event::from_bits(event).unwrap());
                     }
                 } else {
                     return None;
@@ -114,15 +114,12 @@ mod tests {
 
     #[test]
     fn test_pollfd_events() {
-        let events = Events::POLLIN | Events::POLLERR | Events::POLLHUP;
+        let events = Event::POLLIN | Event::POLLERR | Event::POLLHUP;
         let mut pfd = PollFd::new(100, events);
         pfd.0.revents = events.into();
-        let ev_vec: Vec<Events> = pfd.events().collect();
+        let ev_vec: Vec<Event> = pfd.events().collect();
         assert_eq!(ev_vec.len(), 3);
-        assert_eq!(
-            ev_vec,
-            vec![Events::POLLIN, Events::POLLERR, Events::POLLHUP]
-        );
+        assert_eq!(ev_vec, vec![Event::POLLIN, Event::POLLERR, Event::POLLHUP]);
     }
 
     #[test]
@@ -132,12 +129,12 @@ mod tests {
         poll.register(
             &reader,
             Token(0),
-            Events::all_readable() | Events::all_error(),
+            Event::all_readable() | Event::all_error(),
         );
         poll.register(
             &writer,
             Token(1),
-            Events::all_writable() | Events::all_error(),
+            Event::all_writable() | Event::all_error(),
         );
         assert_ok!(poll.poll(None));
         let (_, ev) = poll.events().nth(0).unwrap();

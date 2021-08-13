@@ -6,7 +6,7 @@ dependencies other than libc.
 
 ## Example
 ```rust
-use pipelib::Events; 
+use pipelib::Event; 
 use pipelib::Poll;
 use pipelib::Token;
 use std::{
@@ -19,8 +19,8 @@ fn main() -> io::Result<()> {
     const WRITER_TOKEN: Token = Token(1);
     let (mut reader, mut writer) = pipelib::new()?;
     let mut poll = Poll::new();
-    poll.register(&mut reader, READER_TOKEN, Events::POLLIN | Events::POLLERR);
-    poll.register(&mut writer, WRITER_TOKEN, Events::POLLOUT | Events::POLLERR);
+    poll.register(&mut reader, READER_TOKEN, Event::POLLIN | Event::POLLERR);
+    poll.register(&mut writer, WRITER_TOKEN, Event::POLLOUT | Event::POLLERR);
     let mut buf = Vec::new();
     'outer: loop {
         poll.poll(None)?;

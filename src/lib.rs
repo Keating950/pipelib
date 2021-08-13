@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #[macro_use]
 mod macros;
-mod events;
+mod event;
 mod pipe;
 mod poll;
 mod pollable;
@@ -9,7 +9,7 @@ mod reader;
 mod writer;
 
 pub use crate::{
-    events::Events,
+    event::Event,
     poll::{Poll, Token},
     pollable::Pollable,
     reader::Reader,
