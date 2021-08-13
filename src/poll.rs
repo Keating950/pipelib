@@ -23,7 +23,6 @@ impl Poll {
     /// Register a [Pollable] object for polling. `token` is later yielded by [Poll::events] along
     /// with each event to indicate which object the event applies to. Note that a caller may
     /// register multiple different pollable objects with the same token.
-    #[inline]
     pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Event) {
         self.fds.push(PollFd::new(fd.as_raw_fd(), events));
         self.tokens.push(token);
