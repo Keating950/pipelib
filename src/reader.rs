@@ -48,9 +48,4 @@ impl Read for Reader {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.read(buf)
     }
-
-    #[inline]
-    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
-        self.0.read_to_end(buf)
-    }
 }
