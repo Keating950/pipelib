@@ -3,7 +3,6 @@ use libc::{
     POLLERR, POLLHUP, POLLIN, POLLNVAL, POLLOUT, POLLPRI, POLLRDBAND, POLLRDNORM, POLLWRBAND,
     POLLWRNORM,
 };
-use std::mem;
 
 bitflags! {
     /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
@@ -30,34 +29,26 @@ impl From<Event> for i16 {
 }
 
 impl Event {
-    /// Returns a bitmask of all events indicating that a pipe is readable.
-    // For whatever, reason the BitOr operation for a bitflags struct is not considered const,
-    // despite the operation on its bits being so. This is why transmute is used here and in the
-    // other masking functions.
     #[inline]
     pub const fn all_readable() -> Event {
-        unsafe {
-            mem::transmute(
-                Event::POLLIN.bits
-                    | Event::POLLRDNORM.bits
-                    | Event::POLLRDBAND.bits
-                    | Event::POLLPRI.bits,
-            )
-        }
+        Event::POLLIN
+            .union(Event::POLLRDNORM)
+            .union(Event::POLLRDBAND)
+            .union(Event::POLLPRI)
     }
 
     /// Returns a bitmask of all events indicating that a pipe is writable.
     #[inline]
     pub const fn all_writable() -> Event {
-        unsafe {
-            mem::transmute(Event::POLLOUT.bits | Event::POLLWRNORM.bits | Event::POLLWRBAND.bits)
-        }
+        Event::POLLOUT
+            .union(Event::POLLWRNORM)
+            .union(Event::POLLWRBAND)
     }
 
     /// Returns a bitmask of all events indicating an error state.
     #[inline]
     pub const fn all_error() -> Event {
-        unsafe { mem::transmute(Event::POLLERR.bits | Event::POLLNVAL.bits) }
+        Event::POLLERR.union(Event::POLLNVAL)
     }
 
     /// Whether a particular event indicates that a pipe is readable.
