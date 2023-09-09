@@ -29,14 +29,11 @@ impl Poll {
         self.tokens.push(token);
     }
 
-    /// Polls the registered pipes. If the value of `timeout` is `None`, the call will return
-    /// immediately.
-    #[allow(clippy::cast_possible_wrap)] // Temporary measure
-    pub fn poll(&mut self, timeout: Option<u32>) -> io::Result<usize> {
-        let timeout = timeout.unwrap_or(0) as i32;
+    /// Polls the registered pipes.
+    pub fn poll(&mut self, timeout: Timeout) -> io::Result<usize> {
         unsafe {
             let ptr = self.fds.as_mut_ptr().cast::<pollfd>();
-            match libc::poll(ptr, self.fds.len() as nfds_t, timeout) {
+            match libc::poll(ptr, self.fds.len() as nfds_t, timeout.0) {
                 n if n < 0 => Err(oserr!()),
                 n => Ok(n as usize),
             }
@@ -54,7 +51,74 @@ impl Poll {
     }
 }
 
-/* -------------------------------------------------------------- */
+/// Timeout value for [`Poll::poll`](crate::Poll::poll). Can be infinite or a number of
+/// seconds in the interval [0, [`i32::MAX`]].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Timeout(i32);
+
+impl PartialOrd for Timeout {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Timeout {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (x, y) if x.is_infinite() && y.is_infinite() => std::cmp::Ordering::Equal,
+            (x, _) if x.is_infinite() => std::cmp::Ordering::Greater,
+            (_, y) if y.is_infinite() => std::cmp::Ordering::Greater,
+            (x, y) => x.0.cmp(&y.0),
+        }
+    }
+}
+
+impl Timeout {
+    /// Create a timeout value that causes polls to return instantly. This is the same as calling
+    /// `Timeout::secs(0)`.
+    #[inline]
+    #[must_use]
+    pub const fn instant() -> Timeout {
+        Timeout(0)
+    }
+
+    /// Create a timeout value that causes polls to wait infinitely.
+    #[inline]
+    #[must_use]
+    pub const fn infinite() -> Timeout {
+        Timeout(-1)
+    }
+
+    /// Create a timeout value that causes polls to wait for the defined number of seconds. Returns
+    /// [`None`] if `secs` is negative. (To create an infinite timeout, use [`Timeout::infinite`].)
+    #[inline]
+    #[must_use]
+    pub const fn secs(secs: i32) -> Option<Timeout> {
+        if secs >= 0 { Some(Timeout(secs)) } else { None }
+    }
+
+    #[inline]
+    #[must_use]
+    /// Check if the timeout value is infinite.
+    pub const fn is_infinite(self) -> bool {
+        self.0 < 0
+    }
+
+    #[inline]
+    #[must_use]
+    /// Check if the timeout value is zero. Equivalent to `Timeout::as_secs() == 0`.
+    pub const fn is_instant(self) -> bool {
+        self.0 == 0
+    }
+
+    #[inline]
+    #[must_use]
+    /// Get the value of the timeout in seconds. Returns [`None`] if the timeout is infinite.
+    pub const fn as_secs(self) -> Option<i32> {
+        if self.0 >= 0 { Some(self.0) } else { None }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Token(pub usize);
@@ -137,11 +201,11 @@ mod tests {
             Token(1),
             Event::all_writable() | Event::all_error(),
         );
-        assert_ok!(poll.poll(None));
+        assert_ok!(poll.poll(Timeout::instant()));
         let (_, ev) = poll.events().nth(0).unwrap();
         assert!(ev.is_writable());
         writer.write(b"Hello").unwrap();
-        assert_ok!(poll.poll(None));
+        assert_ok!(poll.poll(Timeout::instant()));
         let (_, ev) = poll.events().nth(0).unwrap();
         assert!(ev.is_readable());
     }

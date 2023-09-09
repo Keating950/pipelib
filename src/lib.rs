@@ -16,7 +16,7 @@ mod writer;
 
 pub use crate::{
     event::Event,
-    poll::{Poll, Token},
+    poll::{Poll, Timeout, Token},
     pollable::Pollable,
     reader::Reader,
     writer::Writer,

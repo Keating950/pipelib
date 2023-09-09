@@ -8,7 +8,7 @@ dependencies other than libc.
 ### Example
 
 ```rust
-use pipelib::{Event, Poll, Token};
+use pipelib::{Event, Poll, Token, Timeout};
 use std::{io::{self, prelude::*}, str};
 
 fn main() -> io::Result<()> {
@@ -20,7 +20,7 @@ fn main() -> io::Result<()> {
     poll.register(&mut writer, WRITER_TOKEN, Event::POLLOUT | Event::POLLERR);
     let mut buf = Vec::new();
     'outer: loop {
-        poll.poll(None)?;
+        poll.poll(Timeout::instant())?;
         for (tok, ev) in poll.events() {
             if tok == WRITER_TOKEN && ev.is_writable() {
                 writer.write(b"Hello, world")?;
