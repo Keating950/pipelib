@@ -1,3 +1,9 @@
+#![warn(clippy::perf, clippy::pedantic)]
+#![allow(
+    clippy::default_trait_access,
+    clippy::cast_sign_loss,
+    clippy::missing_errors_doc
+)]
 #![doc = include_str!("../README.md")]
 #[macro_use]
 mod macros;
@@ -17,8 +23,8 @@ pub use crate::{
 };
 use libc::c_int;
 
-/// Creates a [Reader]/[Writer] pair for a non-blocking Unix pipe. The [FD_CLOEXEC](libc::FD_CLOEXEC)
-/// and [O_NONBLOCK](libc::O_NONBLOCK) flags are set for both.
+/// Creates a [`Reader`]/[`Writer`] pair for a non-blocking Unix pipe. The [`FD_CLOEXEC`](libc::FD_CLOEXEC)
+/// and [`O_NONBLOCK`](libc::O_NONBLOCK) flags are set for both.
 pub fn new() -> std::io::Result<(Reader, Writer)> {
     let mut fds: [c_int; 2] = [-1, -1];
     unsafe {

@@ -34,7 +34,7 @@ impl Pipe {
 impl Write for Pipe {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let ptr = buf.as_ptr() as *const c_void;
+        let ptr = buf.as_ptr().cast::<c_void>();
         self.write_from_ptr(ptr, buf.len())
     }
 
@@ -47,7 +47,7 @@ impl Write for Pipe {
 impl Read for Pipe {
     #[inline]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let ptr = buf.as_mut_ptr() as *mut c_void;
+        let ptr = buf.as_mut_ptr().cast::<c_void>();
         self.read_to_ptr(ptr, buf.len())
     }
 }

@@ -5,8 +5,8 @@ use libc::{
 };
 
 bitflags! {
-    /// `Events` is a [bitflags] struct provides a more type-safe interface for [libc]'s poll flags
-    /// \([POLLIN](libc::POLLIN), [POLLOUT](libc::POLLOUT), etc.\).
+    /// `Events` is a bit flag set that provides a more type-safe interface for [libc]'s poll flags
+    /// \([`POLLIN`][libc::POLLIN], [`POLLOUT`][libc::POLLOUT], etc.\).
     pub struct Event: i16 {
         const POLLIN = POLLIN;
         const POLLPRI = POLLPRI;
@@ -30,6 +30,7 @@ impl From<Event> for i16 {
 
 impl Event {
     #[inline]
+    #[must_use]
     pub const fn all_readable() -> Event {
         Event::POLLIN
             .union(Event::POLLRDNORM)
@@ -39,6 +40,7 @@ impl Event {
 
     /// Returns a bitmask of all events indicating that a pipe is writable.
     #[inline]
+    #[must_use]
     pub const fn all_writable() -> Event {
         Event::POLLOUT
             .union(Event::POLLWRNORM)
@@ -47,30 +49,35 @@ impl Event {
 
     /// Returns a bitmask of all events indicating an error state.
     #[inline]
+    #[must_use]
     pub const fn all_error() -> Event {
         Event::POLLERR.union(Event::POLLNVAL)
     }
 
     /// Whether a particular event indicates that a pipe is readable.
     #[inline]
+    #[must_use]
     pub const fn is_readable(self) -> bool {
         self.intersects(Event::all_readable())
     }
 
     /// Whether a particular event indicates that a pipe is writable.
     #[inline]
+    #[must_use]
     pub const fn is_writable(self) -> bool {
         self.intersects(Event::all_writable())
     }
 
     /// Whether a particular event indicates an error.
     #[inline]
+    #[must_use]
     pub const fn is_error(self) -> bool {
         self.intersects(Event::all_error())
     }
 
     /// Whether an event includes `Events::POLLHUP`.
     #[inline]
+    #[must_use]
     pub const fn is_hangup(self) -> bool {
         self.intersects(Event::POLLHUP)
     }

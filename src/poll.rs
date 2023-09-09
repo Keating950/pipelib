@@ -3,8 +3,8 @@ use libc::{c_int, nfds_t, pollfd};
 use smallvec::SmallVec;
 use std::{fmt, io, iter, mem};
 
-/// `Poll` provides an interface for [libc::poll] that allows the monitoring of registered
-/// [Reader](crate::Reader) and [Writer](crate::Writer) instances.
+/// `Poll` provides an interface for [`libc::poll`] that allows the monitoring of registered
+/// [`Reader`](crate::Reader) and [`Writer`](crate::Writer) instances.
 #[derive(Debug, Default)]
 pub struct Poll {
     fds: SmallVec<[PollFd; Poll::POLL_STACK_CAPACITY]>,
@@ -16,11 +16,12 @@ impl Poll {
     const POLL_STACK_CAPACITY: usize = 8;
 
     #[inline]
+    #[must_use]
     pub fn new() -> Poll {
         Default::default()
     }
 
-    /// Register a [Pollable] object for polling. `token` is later yielded by [Poll::events] along
+    /// Register a [Pollable] object for polling. `token` is later yielded by [`Poll::events`] along
     /// with each event to indicate which object the event applies to. Note that a caller may
     /// register multiple different pollable objects with the same token.
     pub fn register<T: Pollable>(&mut self, fd: &T, token: Token, events: Event) {
@@ -30,10 +31,11 @@ impl Poll {
 
     /// Polls the registered pipes. If the value of `timeout` is `None`, the call will return
     /// immediately.
+    #[allow(clippy::cast_possible_wrap)] // Temporary measure
     pub fn poll(&mut self, timeout: Option<u32>) -> io::Result<usize> {
         let timeout = timeout.unwrap_or(0) as i32;
         unsafe {
-            let ptr = mem::transmute::<_, *mut pollfd>(self.fds.as_mut_ptr());
+            let ptr = self.fds.as_mut_ptr().cast::<pollfd>();
             match libc::poll(ptr, self.fds.len() as nfds_t, timeout) {
                 n if n < 0 => Err(oserr!()),
                 n => Ok(n as usize),
@@ -41,7 +43,7 @@ impl Poll {
         }
     }
 
-    /// Iterates over events received in the last call to (poll)[Poll::poll]. Each event
+    /// Iterates over events received in the last call to (poll)[`Poll::poll`]. Each event
     /// is yielded along with the token that the [Pollable] was registered with.
     #[inline]
     pub fn events(&mut self) -> impl Iterator<Item = (Token, Event)> + '_ {

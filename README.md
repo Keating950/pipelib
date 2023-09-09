@@ -8,13 +8,8 @@ dependencies other than libc.
 ### Example
 
 ```rust
-use pipelib::Event;
-use pipelib::Poll;
-use pipelib::Token;
-use std::{
-    io::{self, prelude::*},
-    str,
-};
+use pipelib::{Event, Poll, Token};
+use std::{io::{self, prelude::*}, str};
 
 fn main() -> io::Result<()> {
     const READER_TOKEN: Token = Token(0);

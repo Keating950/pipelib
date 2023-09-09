@@ -8,8 +8,8 @@ use std::{
     },
 };
 
-/// The write end of a Unix pipe. Like [Reader](crate::Reader), Writer is non-blocking, and the
-/// [CLOEXEC](libc::FD_CLOEXEC) flag is set.
+/// The write end of a Unix pipe. Like [`Reader`](crate::Reader), Writer is non-blocking, and the
+/// [`CLOEXEC`](libc::FD_CLOEXEC) flag is set.
 #[derive(Debug)]
 pub struct Writer(Pipe);
 

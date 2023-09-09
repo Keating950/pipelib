@@ -9,8 +9,8 @@ use std::{
     },
 };
 
-/// The read end of a Unix pipe. Like [Writer](crate::Writer), Reader is non-blocking, and the
-/// [CLOEXEC](libc::FD_CLOEXEC) flag is set.
+/// The read end of a Unix pipe. Like [`Writer`](crate::Writer), Reader is non-blocking, and the
+/// [`CLOEXEC`](libc::FD_CLOEXEC) flag is set.
 #[derive(Debug)]
 pub struct Reader(Pipe);
 
