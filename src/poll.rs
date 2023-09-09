@@ -71,11 +71,11 @@ pub(crate) struct PollFd(pollfd);
 
 impl fmt::Debug for PollFd {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            r#"PollFd {{ fd: {}, events: {}, revents: {} }}"#,
-            self.0.fd, self.0.events, self.0.revents
-        )
+        f.debug_struct("PollFd")
+            .field("fd", &self.0.fd)
+            .field("events", &self.0.events)
+            .field("revents", &self.0.revents)
+            .finish()
     }
 }
 
