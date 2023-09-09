@@ -43,8 +43,8 @@ impl Poll {
         }
     }
 
-    /// Iterates over events received in the last call to (poll)[`Poll::poll`]. Each event
-    /// is yielded along with the token that the [Pollable] was registered with.
+    /// Iterates over events received in the last call to [`Poll::poll`]. Each event
+    /// is yielded along with the token that the [pollable](Pollable) was registered with.
     #[inline]
     pub fn events(&mut self) -> impl Iterator<Item = (Token, Event)> + '_ {
         self.fds
