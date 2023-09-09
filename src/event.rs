@@ -69,7 +69,7 @@ impl Event {
         self.intersects(Event::all_error())
     }
 
-    /// Whether an event is `Events::POLLHUP`.
+    /// Whether an event includes `Events::POLLHUP`.
     #[inline]
     pub const fn is_hangup(self) -> bool {
         self.intersects(Event::POLLHUP)
